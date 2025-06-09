@@ -11,7 +11,12 @@ local db_file
 local data
 
 local function load()
-    data = decode(db_file:read())
+    local ok, decoded = pcall(decode, db_file:read())
+    if ok and type(decoded) == "table" then
+        data = decoded
+    else
+        data = { topics = {}, tasks = {} }
+    end
 end
 
 local function save()
@@ -22,6 +27,7 @@ function M.connect(opts)
     db_file = Path:new(opts.path or vim.fn.stdpath("data") .. "/learner/db.json")
     if not db_file:exists() then
         data = { topics = {}, tasks = {} }
+        db_file:parent():mkdir({ parents = true })
         save()
     else
         load()
