@@ -70,3 +70,23 @@ require('learner').setup({
 - `nvim-lua/plenary.nvim`.
 - `curl` and `OPENROUTER_API_KEY` set for LLM features.
 - Optional: `neo4j-lua` if the Neo4j storage adapter is used.
+
+## Development Setup
+
+Run `./setup.sh` to install dependencies on Debian/Ubuntu or macOS. The script
+installs Neovim, LuaRocks, Git, Curl, and fetches the `plenary.nvim` plugin.
+
+If you are on Windows or another platform, install these tools manually:
+
+1. Install **Neovim** and **LuaRocks** using your package manager or from
+   [neovim.io](https://neovim.io/) and [luarocks.org](https://luarocks.org/).
+2. Install the Lua testing framework:
+   ```sh
+   luarocks install --lua-version=5.1 busted
+   ```
+3. (Optional) Install the Neo4j adapter:
+   ```sh
+   luarocks install --lua-version=5.1 neo4j
+   ```
+4. Ensure `nvim-lua/plenary.nvim` is available. Either clone it into
+   `~/.local/share/nvim/site/pack/deps/start` or use your plugin manager.
