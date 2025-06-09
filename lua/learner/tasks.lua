@@ -1,22 +1,13 @@
 local Tasks = {}
-local storage
+local storage = require("learner.storage")
 
 -- In-memory table of all tasks
 Tasks.list = {}
 
 ---Setup task module
-function Tasks.setup(config, store)
+function Tasks.setup(config, _)
     Tasks.config = config or {}
-    storage = store
-    if storage then
-        Tasks.list = storage.query("tasks") or {}
-    end
-end
-
-local function save()
-    if storage then
-        storage.execute("tasks", Tasks.list)
-    end
+    Tasks.list = storage.query("tasks") or {}
 end
 
 ---Add a new learning task
@@ -27,7 +18,7 @@ function Tasks.add(task)
     task.id = id
     task.done = false
     table.insert(Tasks.list, task)
-    save()
+    storage.execute("tasks", Tasks.list)
     return id
 end
 
@@ -40,7 +31,7 @@ function Tasks.mark_done(task_id)
             break
         end
     end
-    save()
+    storage.execute("tasks", Tasks.list)
 end
 
 ---List tasks associated with a specific goal
@@ -54,6 +45,13 @@ function Tasks.list_by_goal(goal_id)
         end
     end
     return results
+end
+
+---Initialize storage data for tasks
+function Tasks.migrate()
+    if not storage.query("tasks") then
+        storage.execute("tasks", {})
+    end
 end
 
 return Tasks
