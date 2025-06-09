@@ -77,8 +77,10 @@ require('learner').setup({
 
 ## Development Setup
 
-Run `./setup.sh` to install dependencies on Debian/Ubuntu or macOS. The script
-installs Neovim, LuaRocks, Git, Curl, and fetches the `plenary.nvim` plugin.
+Run `./setup.sh` to install dependencies on Debian/Ubuntu or macOS.
+The script uses `sudo` for `apt-get` and `luarocks` installs, so review it
+before running. Pass `--no-root` to skip these privileged steps. It installs
+Neovim, LuaRocks, Git, Curl, and fetches the `plenary.nvim` plugin.
 
 If you are on Windows or another platform, install these tools manually:
 
