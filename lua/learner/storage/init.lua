@@ -4,18 +4,33 @@
 local config = require("learner.config")
 local M = {}
 
--- Load the configured adapter ("neo4j" or "file")
-local adapter_name = config.storage.adapter or "file"
-local ok, adapter = pcall(require, "learner.storage." .. adapter_name)
-if not ok then
-	error("[learner.nvim] Could not load storage adapter: " .. adapter_name)
+local adapter
+
+local function load_adapter()
+    local adapter_name = config.get().storage.adapter or "file"
+    local ok, mod = pcall(require, "learner.storage." .. adapter_name)
+    if not ok then
+        error("[learner.nvim] Could not load storage adapter: " .. adapter_name)
+    end
+    adapter = mod
 end
 
--- Proxy API
-M.connect = adapter.connect
-M.query   = adapter.query
-M.execute = adapter.execute
-M.migrate = adapter.migrate
-M.close   = adapter.close
+---Connect to the underlying storage backend
+function M.connect(opts)
+    if not adapter then
+        load_adapter()
+    end
+    adapter.connect(opts or config.get().storage)
+end
+
+---Proxy functions to the loaded adapter
+for _, fn in ipairs({ "query", "execute", "migrate", "close" }) do
+    M[fn] = function(...)
+        if not adapter then
+            load_adapter()
+        end
+        return adapter[fn](...)
+    end
+end
 
 return M

@@ -1,28 +1,42 @@
 -- File: lua/learner/storage/file.lua
 -- Flat-file (JSON) adapter for offline/local fallback
 
-local uv = vim.loop
-local json = vim.fn.json_encode and vim.fn.json_decode or error("No JSON support")
+local encode = vim.fn.json_encode
+local decode = vim.fn.json_decode
 local Path = require("plenary.path")
 
 local M = {}
 local db_file
 
+local data
+
+local function load()
+    data = decode(db_file:read())
+end
+
+local function save()
+    db_file:write(encode(data), "w")
+end
+
 function M.connect(opts)
-	db_file = Path:new(opts.path or vim.fn.stdpath("data") .. "/learner/db.json")
-	if not db_file:exists() then
-		db_file:write(json({ nodes = {}, relations = {} }), "w")
-	end
+    db_file = Path:new(opts.path or vim.fn.stdpath("data") .. "/learner/db.json")
+    if not db_file:exists() then
+        data = { topics = {}, tasks = {} }
+        save()
+    else
+        load()
+    end
 end
 
-function M.query(cypher, params)
-	-- Simple in-memory stub or use a JSON search
-	error("Flat-file adapter: query not implemented yet")
+---Retrieve a value by key from the JSON store
+function M.query(key)
+    return data[key]
 end
 
-function M.execute(cypher, params)
-	-- Append to a CRUD log, or apply to JSON
-	error("Flat-file adapter: execute not implemented yet")
+---Write a value for a given key back to the JSON store
+function M.execute(key, value)
+    data[key] = value
+    save()
 end
 
 function M.migrate()
