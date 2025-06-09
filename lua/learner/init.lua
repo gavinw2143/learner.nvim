@@ -9,10 +9,14 @@ function M.setup(opts)
     -- Persist configuration for other modules
     config.setup(opts)
 
+    -- Establish storage connection early so other modules can persist data
+    local storage = require("learner.storage")
+    storage.connect(config.get().storage)
+
     -- Initialize submodules with their respective configs
-    require("learner.srs").setup(config.get().srs)
+    require("learner.srs").setup(config.get().srs, storage)
     require("learner.llm").setup(config.get().llm)
-    require("learner.tasks").setup(config.get().tasks)
+    require("learner.tasks").setup(config.get().tasks, storage)
     require("learner.ui").setup(config.get().ui)
 end
 

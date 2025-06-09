@@ -283,3 +283,11 @@ Let me know which of these suggestions resonate most, and feel free to expand or
 
 > Gavin
 
+## Setup
+
+Call `require("learner").setup()` from your Neovim configuration. During
+initialization the plugin connects to the storage backend specified under the
+`storage` field of your setup options. The resulting storage handle is shared
+with tasks and the spaced repetition scheduler so topics and tasks persist
+across sessions.
+
