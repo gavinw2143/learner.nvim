@@ -2,10 +2,27 @@ local UI = {}
 local events = require("learner.events")
 local tasks = require("learner.tasks")
 
+local DEFAULT_MAX_PREVIEW_CHARS = 4000
+
+---Sanitize text for display by stripping control characters and
+---truncating overly long output.
+---@param text string
+---@return string
+function UI.sanitize_text(text)
+    text = tostring(text or "")
+    text = text:gsub('[%z\1-\8\11\12\14-\31\127]', '')
+    local max_len = (UI.config and UI.config.max_preview_chars) or DEFAULT_MAX_PREVIEW_CHARS
+    if #text > max_len then
+        text = text:sub(1, max_len) .. "..."
+    end
+    return text
+end
+
 ---Open a scrollable floating window showing the given text
 ---@param text string content to display
 ---@return boolean success
 function UI.show_llm(text)
+    text = UI.sanitize_text(text)
     local buf = vim.api.nvim_create_buf(false, true)
     if not buf then
         return false
@@ -52,7 +69,7 @@ function UI.setup(config)
                 ok = UI.show_llm(info.text)
             end)
             if not status or not ok then
-                vim.notify(info.text, vim.log.levels.INFO)
+                vim.notify(UI.sanitize_text(info.text), vim.log.levels.INFO)
             end
         end
     end)
