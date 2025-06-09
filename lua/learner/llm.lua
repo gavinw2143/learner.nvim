@@ -11,6 +11,15 @@ M.config = {
 ---Setup LLM configuration
 function M.setup(opts)
     M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+    if not M.config.api_key or M.config.api_key == "" then
+        vim.schedule(function()
+            vim.notify(
+                "Missing LLM API key. Set $OPENROUTER_API_KEY or call require('learner').setup({ llm = { api_key = 'KEY' } })",
+                vim.log.levels.WARN
+            )
+        end)
+    end
+
     events.subscribe("llm_request", function(prompt)
         M.complete(prompt, function(resp)
             events.emit("llm_response", { prompt = prompt, text = resp })
@@ -37,6 +46,7 @@ function M.complete(prompt, callback)
 
     local args = {
         "-s",
+        "-w", "%{http_code}",
         "-X", "POST",
         "-H", "Authorization: Bearer " .. M.config.api_key,
         "-H", "Content-Type: application/json",
@@ -58,8 +68,22 @@ function M.complete(prompt, callback)
         local result = ""
         if code == 0 then
             local resp = table.concat(chunks)
-            local data = vim.fn.json_decode(resp)
-            result = data and data.choices and data.choices[1].message.content or ""
+            local status = tonumber(resp:sub(-3))
+            local body = resp:sub(1, -4)
+            if status ~= 200 then
+                vim.schedule(function()
+                    vim.notify(body, vim.log.levels.ERROR)
+                end)
+            else
+                local ok, data = pcall(vim.fn.json_decode, body)
+                if ok and data and data.choices then
+                    result = data.choices[1].message.content
+                else
+                    vim.schedule(function()
+                        vim.notify(body, vim.log.levels.ERROR)
+                    end)
+                end
+            end
         else
             vim.schedule(function()
                 vim.notify("LLM request failed (code " .. code .. ")", vim.log.levels.ERROR)
