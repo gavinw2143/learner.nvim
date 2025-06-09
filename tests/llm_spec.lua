@@ -40,6 +40,7 @@ describe('LLM completion', function()
   local llm
   local events = require('learner.events')
   local uv_orig
+  local stdin_pipe
   local stdout_pipe
   local stderr_pipe
   local spawn_cb
@@ -54,6 +55,7 @@ describe('LLM completion', function()
     function obj:read_start(cb) self.cb = cb end
     function obj:read_stop() end
     function obj:close() end
+    function obj:write(data) self.written = (self.written or '') .. data end
     function obj:send(data) if self.cb then self.cb(nil, data) end end
     return obj
   end
@@ -76,8 +78,10 @@ describe('LLM completion', function()
     local uv = {}
     stdout_pipe = pipe()
     stderr_pipe = pipe()
+    stdin_pipe = pipe()
     function uv.new_pipe()
-      if not uv._called then uv._called = true return stdout_pipe else return stderr_pipe end
+      uv._called = (uv._called or 0) + 1
+      if uv._called == 1 then return stdin_pipe elseif uv._called == 2 then return stdout_pipe else return stderr_pipe end
     end
     function uv.spawn(cmd, opts, cb)
       spawn_cb = cb
