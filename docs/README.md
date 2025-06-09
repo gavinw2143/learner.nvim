@@ -63,6 +63,6 @@ The project is still experimental. Planned work includes:
 
 - **Neo4j integration** – richer graph queries and migrations beyond the basic adapter.
 - **FSRS scheduling** – replace the simple SM‑2 style algorithm with [FSRS](https://github.com/open-spaced-repetition/fsrs) for better review intervals.
-- **History view** – expose conversation and review history (see `HISTORY.md`).
+- **History view** – expose conversation and review history (see `../HISTORY.md`).
 
 Contributions and ideas are welcome as the plugin evolves.
