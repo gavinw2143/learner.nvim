@@ -39,7 +39,20 @@ function UI.register_commands()
             if not choice then
                 return
             end
-            events.emit("topic_reviewed", { id = choice.id, topic = choice, quality = 5 })
+
+            vim.ui.input({
+                prompt = "Score 0-5",
+                default = "5",
+            }, function(input)
+                if input == nil then
+                    return
+                end
+                local score = tonumber(input)
+                if not score or score < 0 or score > 5 then
+                    score = 5
+                end
+                events.emit("topic_reviewed", { id = choice.id, topic = choice, quality = score })
+            end)
         end)
     end, {})
 
