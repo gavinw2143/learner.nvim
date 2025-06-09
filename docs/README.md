@@ -153,16 +153,16 @@ Feel free to pick the areas you’d like to flesh out first, or suggest others I
 
 3. 
     * The user's goals will be stored through LLM evaluation of the conversationbase
-    * The conversationbase will contain all interactions between the user and Langu
+* The conversationbase will contain all interactions between the user and learner.nvim
 
-## Langu:
+## learner.nvim:
     * A tool for graceful thought:
-    1. A keymap can open a menu/hub where a user can access their queries to Langu, make new queries to Langu, and set options for Langu
+1. A keymap can open a menu/hub where a user can access their queries to learner.nvim, make new queries to learner.nvim, and set options for learner.nvim
     2. VISUAL-mode-highlighted text + a hotkey will open a small window under the cursor that allows the user to make some query regarding the highlighted text
     3. Each query has a context and related topics
-    4. User can configure topic focus manually by requesting Langu
+4. User can configure topic focus manually by requesting learner.nvim
 
-I could probably just rename this plugin to langu.nvim or something like that; the ideas I already described depend on it
+I decided to name this plugin learner.nvim; the ideas I already described depend on it
 
     * Tasks can and should roll up into multiple overlapping goals
     * "Done" looks exactly as you describe: completing assessments through conversation and evaluating documents/codebases that determine ability to build projects, complete assignments
@@ -194,7 +194,7 @@ I could probably just rename this plugin to langu.nvim or something like that; t
 Keep asking questions! I want this to be very robust and managable; if you have concerns be sure to express them.
 
 > Langu
-Here are some thoughts on making **learner.nvim / langu.nvim** as extensible and seamlessly integrated into your workflow as possible—plus a few more questions to nail down the details:
+Here are some thoughts on making **learner.nvim** as extensible and seamlessly integrated into your workflow as possible—plus a few more questions to nail down the details:
 
 ---
 
@@ -211,7 +211,7 @@ Here are some thoughts on making **learner.nvim / langu.nvim** as extensible and
   * Isolate FSRS-specific code in its own module so that additional algorithms (e.g. Leitner, custom heuristics) can be dropped in by implementing a single function signature (`score(topic)`).
 * **LLM Integration Layer**
 
-  * Wrap all calls to OpenRouter behind a `langu.llm.request(prompt_type, context_segments, opts)` API—so you can swap providers or add caching/retries without touching your UI code.
+  * Wrap all calls to OpenRouter behind a `learner.llm.request(prompt_type, context_segments, opts)` API—so you can swap providers or add caching/retries without touching your UI code.
 * **UI Layer**
 
   * Define a minimal set of “events” (e.g. `on_topic_selected`, `on_review_complete`, `on_query_submitted`) that UI components can subscribe to.
@@ -219,19 +219,19 @@ Here are some thoughts on making **learner.nvim / langu.nvim** as extensible and
 
 ### 2. Configuration & Secrets
 
-* Store credentials (Neo4j URI, OpenRouter API key) in a single `langu.setup({ … })` call, loading defaults from environment or a `.env` file under `stdpath("config")`.
+* Store credentials (Neo4j URI, OpenRouter API key) in a single `learner.setup({ … })` call, loading defaults from environment or a `.env` file under `stdpath("config")`.
 * Offer an override hook—so users can plug in [vim-secret](https://github.com/kdheepak/vim-secret) or similar if they want encrypted storage later.
 
 ### 3. Data Versioning
 
 * Treat your Git-style tree as a pluggable backend:
 
-  * Default: log CRUD actions to a JSON “action log,” then expose a `:LanguUndo` / `:LanguRedo` that replays or rolls back the log.
+  * Default: log CRUD actions to a JSON “action log,” then expose a `:LearnerUndo` / `:LearnerRedo` that replays or rolls back the log.
   * Advanced: integrate with `git` under the hood—automatically commit snapshot files as topics evolve.
 
 ### 4. Containerized Development with Dagger.io
 
-* Provide a `:LanguDevStart` command that spins up a Dagger container with Neo4j preconfigured, then points your plugin at that instance.
+* Provide a `:LearnerDevStart` command that spins up a Dagger container with Neo4j preconfigured, then points your plugin at that instance.
 * Let power-users pass in a `docker-compose.yml` or Dagger script to customize the environment.
 
 ### 5. Conversationbase & Chain-of-Focus
@@ -245,9 +245,9 @@ Here are some thoughts on making **learner.nvim / langu.nvim** as extensible and
 * **Neorg / Orgmode**: Offer a Pandoc-style exporter that syncs Org headings → graph, letting you maintain your master outline in Org while tracking metadata in Neo4j.
 * **Telescope**:
 
-  * `:Telescope langu topics`
-  * `:Telescope langu tasks`
-  * `:Telescope langu focus_history`
+  * `:Telescope learner topics`
+  * `:Telescope learner tasks`
+  * `:Telescope learner focus_history`
 
 ---
 
@@ -274,7 +274,7 @@ Here are some thoughts on making **learner.nvim / langu.nvim** as extensible and
 
 5. **LLM Prompt Customization**
 
-   * Would you like a UI for editing the system-prompt template, or should that live purely in your `langu.setup{…}` config?
+   * Would you like a UI for editing the system-prompt template, or should that live purely in your `learner.setup{…}` config?
    * For multi-segment prompts (analogies, summaries), how many segments should be the default batch size before you get prompted to refine it?
 
 ---
