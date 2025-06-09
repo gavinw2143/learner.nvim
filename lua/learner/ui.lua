@@ -1,8 +1,20 @@
 local UI = {}
+local events = require("learner.events")
 
 ---Setup UI components (commands and keymaps)
 function UI.setup(config)
     UI.config = config or {}
+    events.subscribe("llm_response", function(info)
+        if type(info) == "table" and info.text then
+            vim.notify(info.text, vim.log.levels.INFO)
+        end
+    end)
+    events.subscribe("topic_reviewed", function(info)
+        if type(info) == "table" and info.topic then
+            local title = info.topic.data and info.topic.data.title or info.topic.id
+            vim.notify("Reviewed " .. title)
+        end
+    end)
     UI.register_commands()
 end
 
@@ -27,22 +39,17 @@ function UI.register_commands()
             if not choice then
                 return
             end
-            -- After user picks a topic we record a successful review by default
-            srs.record_review(choice.id, 5)
-            vim.notify("Reviewed " .. (choice.data.title or choice.id))
+            events.emit("topic_reviewed", { id = choice.id, topic = choice, quality = 5 })
         end)
     end, {})
 
     -- Simple LLM prompt helper
     vim.api.nvim_create_user_command("LearnerSuggest", function(opts)
-        local llm = require("learner.llm")
         local prompt = table.concat(opts.fargs, " ")
         if prompt == "" then
             prompt = "Give me a learning suggestion"
         end
-        llm.complete(prompt, function(resp)
-            vim.notify(resp, vim.log.levels.INFO)
-        end)
+        events.emit("llm_request", prompt)
     end, { nargs = "*" })
 end
 

@@ -1,4 +1,5 @@
 local M = {}
+local events = require("learner.events")
 
 -- Default options for LLM integration
 M.config = {
@@ -10,6 +11,11 @@ M.config = {
 ---Setup LLM configuration
 function M.setup(opts)
     M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+    events.subscribe("llm_request", function(prompt)
+        M.complete(prompt, function(resp)
+            events.emit("llm_response", { prompt = prompt, text = resp })
+        end)
+    end)
 end
 
 ---Send a prompt to the configured LLM provider
