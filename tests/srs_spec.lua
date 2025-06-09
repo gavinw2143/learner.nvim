@@ -1,13 +1,13 @@
 local srs = require('learner.srs')
 
 local function stub_storage()
+  local data = {}
   return {
-    data = {},
-    query = function(self, key)
-      return self.data[key]
+    query = function(key)
+      return data[key]
     end,
-    execute = function(self, key, value)
-      self.data[key] = value
+    execute = function(key, value)
+      data[key] = value
     end,
   }
 end
