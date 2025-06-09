@@ -14,30 +14,72 @@ end
 
 ---Send a prompt to the configured LLM provider
 ---@param prompt string user prompt
----@return string result
-function M.complete(prompt)
-    local curl = require("plenary.curl")
-
-    local res = curl.post(M.config.api_url, {
-        headers = {
-            ["Authorization"] = "Bearer " .. M.config.api_key,
-            ["Content-Type"] = "application/json",
+---@param callback fun(text:string)|nil called with the completion text
+---@return userdata|nil handle of the spawned job
+function M.complete(prompt, callback)
+    local uv = vim.loop
+    local body = vim.fn.json_encode({
+        model = M.config.model,
+        messages = {
+            { role = "user", content = prompt },
         },
-        body = vim.fn.json_encode({
-            model = M.config.model,
-            messages = {
-                { role = "user", content = prompt },
-            },
-        }),
     })
 
-    if res.status ~= 200 then
-        vim.notify("LLM request failed: " .. (res.status or ""), vim.log.levels.ERROR)
-        return ""
-    end
+    local stdout = uv.new_pipe(false)
+    local stderr = uv.new_pipe(false)
+    local chunks = {}
 
-    local data = vim.fn.json_decode(res.body)
-    return data and data.choices and data.choices[1].message.content or ""
+    local args = {
+        "-s",
+        "-X", "POST",
+        "-H", "Authorization: Bearer " .. M.config.api_key,
+        "-H", "Content-Type: application/json",
+        "-d", body,
+        M.config.api_url,
+    }
+
+    local handle
+    handle = uv.spawn("curl", {
+        args = args,
+        stdio = { nil, stdout, stderr },
+    }, function(code)
+        stdout:read_stop()
+        stderr:read_stop()
+        stdout:close()
+        stderr:close()
+        handle:close()
+
+        local result = ""
+        if code == 0 then
+            local resp = table.concat(chunks)
+            local data = vim.fn.json_decode(resp)
+            result = data and data.choices and data.choices[1].message.content or ""
+        else
+            vim.schedule(function()
+                vim.notify("LLM request failed (code " .. code .. ")", vim.log.levels.ERROR)
+            end)
+        end
+
+        if callback then
+            vim.schedule(function()
+                callback(result)
+            end)
+        end
+    end)
+
+    stdout:read_start(function(err, data)
+        if err then return end
+        if data then table.insert(chunks, data) end
+    end)
+
+    stderr:read_start(function(err, data)
+        if err or not data then return end
+        vim.schedule(function()
+            vim.notify(data, vim.log.levels.ERROR)
+        end)
+    end)
+
+    return handle
 end
 
 return M

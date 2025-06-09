@@ -40,8 +40,9 @@ function UI.register_commands()
         if prompt == "" then
             prompt = "Give me a learning suggestion"
         end
-        local resp = llm.complete(prompt)
-        vim.notify(resp, vim.log.levels.INFO)
+        llm.complete(prompt, function(resp)
+            vim.notify(resp, vim.log.levels.INFO)
+        end)
     end, { nargs = "*" })
 end
 
