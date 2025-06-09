@@ -37,6 +37,35 @@ function Tasks.mark_done(task_id)
     storage.execute("tasks", Tasks.list)
 end
 
+---Remove a task completely
+---@param task_id number
+function Tasks.remove(task_id)
+    for i, t in ipairs(Tasks.list) do
+        if t.id == task_id then
+            table.remove(Tasks.list, i)
+            break
+        end
+    end
+    storage.execute("tasks", Tasks.list)
+end
+
+---Update fields on a task
+---@param task_id number
+---@param fields table
+function Tasks.update(task_id, fields)
+    for _, t in ipairs(Tasks.list) do
+        if t.id == task_id then
+            for k, v in pairs(fields) do
+                if k ~= "id" then
+                    t[k] = v
+                end
+            end
+            break
+        end
+    end
+    storage.execute("tasks", Tasks.list)
+end
+
 ---List tasks associated with a specific goal
 ---@param goal_id number
 ---@return table[]

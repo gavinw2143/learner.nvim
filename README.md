@@ -63,6 +63,10 @@ require('learner').setup({
 | --- | --- |
 | `:LearnerReview` | Review due topics via a picker. |
 | `:LearnerSuggest [prompt]` | Ask the LLM for a suggestion or answer. |
+| `:LearnerAddTask {desc}` | Add a new learning task. |
+| `:LearnerRemoveTask {id}` | Remove a task by ID. |
+| `:LearnerDoneTask {id}` | Mark a task as completed. |
+| `:LearnerUpdateTask {id} {desc}` | Update a task's description. |
 
 ## Prerequisites
 

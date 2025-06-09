@@ -1,5 +1,6 @@
 local UI = {}
 local events = require("learner.events")
+local tasks = require("learner.tasks")
 
 ---Setup UI components (commands and keymaps)
 function UI.setup(config)
@@ -64,6 +65,52 @@ function UI.register_commands()
         end
         events.emit("llm_request", prompt)
     end, { nargs = "*" })
+
+    -- Task management helpers
+    vim.api.nvim_create_user_command("LearnerAddTask", function(opts)
+        local desc = table.concat(opts.fargs, " ")
+        if desc == "" then
+            vim.notify("Task description required", vim.log.levels.ERROR)
+            return
+        end
+        local id = tasks.add({ desc = desc })
+        vim.notify("Added task " .. id)
+    end, { nargs = "+" })
+
+    vim.api.nvim_create_user_command("LearnerRemoveTask", function(opts)
+        local id = tonumber(opts.args)
+        if not id then
+            vim.notify("Task id required", vim.log.levels.ERROR)
+            return
+        end
+        tasks.remove(id)
+        vim.notify("Removed task " .. id)
+    end, { nargs = 1 })
+
+    vim.api.nvim_create_user_command("LearnerDoneTask", function(opts)
+        local id = tonumber(opts.args)
+        if not id then
+            vim.notify("Task id required", vim.log.levels.ERROR)
+            return
+        end
+        tasks.mark_done(id)
+        vim.notify("Marked task " .. id .. " done")
+    end, { nargs = 1 })
+
+    vim.api.nvim_create_user_command("LearnerUpdateTask", function(opts)
+        local id = tonumber(opts.fargs[1])
+        if not id then
+            vim.notify("Task id required", vim.log.levels.ERROR)
+            return
+        end
+        local desc = table.concat(vim.list_slice(opts.fargs, 2), " ")
+        if desc == "" then
+            vim.notify("New description required", vim.log.levels.ERROR)
+            return
+        end
+        tasks.update(id, { desc = desc })
+        vim.notify("Updated task " .. id)
+    end, { nargs = "+" })
 end
 
 return UI
