@@ -1,4 +1,5 @@
 local SRS = {}
+local storage
 
 -- Table storing topic state indexed by id
 SRS.topics = {}
@@ -8,8 +9,18 @@ SRS.config = { base_interval = 1 }
 
 ---Setup SRS options
 ---@param config table|nil
-function SRS.setup(config)
+function SRS.setup(config, store)
     SRS.config = vim.tbl_deep_extend("force", SRS.config, config or {})
+    storage = store
+    if storage then
+        SRS.topics = storage.query("topics") or {}
+    end
+end
+
+local function save()
+    if storage then
+        storage.execute("topics", SRS.topics)
+    end
 end
 
 ---Add a new topic to the scheduler
@@ -19,6 +30,7 @@ function SRS.add_topic(topic)
     topic.due = topic.due or os.time()
     topic.ease = topic.ease or 2.5
     SRS.topics[topic.id] = topic
+    save()
 end
 
 ---Return a list of topics that are due for review
@@ -54,6 +66,7 @@ function SRS.record_review(topic_id, quality)
     t.interval = math.max(1, (t.interval * t.ease))
     t.due = os.time() + math.floor(t.interval * 24 * 60 * 60)
     t.last_review = os.time()
+    save()
 end
 
 return SRS

@@ -1,11 +1,22 @@
 local Tasks = {}
+local storage
 
 -- In-memory table of all tasks
 Tasks.list = {}
 
 ---Setup task module
-function Tasks.setup(config)
+function Tasks.setup(config, store)
     Tasks.config = config or {}
+    storage = store
+    if storage then
+        Tasks.list = storage.query("tasks") or {}
+    end
+end
+
+local function save()
+    if storage then
+        storage.execute("tasks", Tasks.list)
+    end
 end
 
 ---Add a new learning task
@@ -16,6 +27,7 @@ function Tasks.add(task)
     task.id = id
     task.done = false
     table.insert(Tasks.list, task)
+    save()
     return id
 end
 
@@ -28,6 +40,7 @@ function Tasks.mark_done(task_id)
             break
         end
     end
+    save()
 end
 
 ---List tasks associated with a specific goal
