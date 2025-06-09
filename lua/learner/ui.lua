@@ -2,12 +2,58 @@ local UI = {}
 local events = require("learner.events")
 local tasks = require("learner.tasks")
 
+---Open a scrollable floating window showing the given text
+---@param text string content to display
+---@return boolean success
+function UI.show_llm(text)
+    local buf = vim.api.nvim_create_buf(false, true)
+    if not buf then
+        return false
+    end
+    vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+    local lines = vim.split(text, "\n", { plain = true })
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+
+    local width = math.floor(vim.o.columns * 0.6)
+    local height = math.min(#lines, math.floor(vim.o.lines * 0.6))
+    local row = math.floor((vim.o.lines - height) / 2 - 1)
+    local col = math.floor((vim.o.columns - width) / 2)
+
+    local ok, win = pcall(vim.api.nvim_open_win, buf, true, {
+        relative = "editor",
+        row = row,
+        col = col,
+        width = width,
+        height = height,
+        style = "minimal",
+        border = "single",
+    })
+    if not ok or not win then
+        return false
+    end
+
+    vim.keymap.set("n", "q", function()
+        if vim.api.nvim_win_is_valid(win) then
+            vim.api.nvim_win_close(win, true)
+        end
+    end, { buffer = buf, nowait = true })
+
+    vim.api.nvim_buf_set_option(buf, "modifiable", false)
+    return true
+end
+
 ---Setup UI components (commands and keymaps)
 function UI.setup(config)
     UI.config = config or {}
     events.subscribe("llm_response", function(info)
         if type(info) == "table" and info.text then
-            vim.notify(info.text, vim.log.levels.INFO)
+            local ok = false
+            local status = pcall(function()
+                ok = UI.show_llm(info.text)
+            end)
+            if not status or not ok then
+                vim.notify(info.text, vim.log.levels.INFO)
+            end
         end
     end)
     events.subscribe("topic_reviewed", function(info)
