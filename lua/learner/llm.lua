@@ -40,6 +40,7 @@ function M.complete(prompt, callback)
         },
     })
 
+    local stdin = uv.new_pipe(false)
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
     local chunks = {}
@@ -48,7 +49,7 @@ function M.complete(prompt, callback)
         "-s",
         "-w", "%{http_code}",
         "-X", "POST",
-        "-H", "Authorization: Bearer " .. M.config.api_key,
+        "-H", "@-",
         "-H", "Content-Type: application/json",
         "-d", body,
         M.config.api_url,
@@ -57,7 +58,7 @@ function M.complete(prompt, callback)
     local handle
     handle = uv.spawn("curl", {
         args = args,
-        stdio = { nil, stdout, stderr },
+        stdio = { stdin, stdout, stderr },
     }, function(code)
         stdout:read_stop()
         stderr:read_stop()
@@ -108,6 +109,9 @@ function M.complete(prompt, callback)
             vim.notify(data, vim.log.levels.ERROR)
         end)
     end)
+
+    stdin:write("Authorization: Bearer " .. M.config.api_key .. "\n")
+    stdin:close()
 
     return handle
 end
