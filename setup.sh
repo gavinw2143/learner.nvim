@@ -10,6 +10,8 @@ fi
 # Install Lua testing dependencies
 if command -v luarocks >/dev/null; then
     sudo luarocks install --lua-version=5.1 busted || true
+    # Required for the Neo4j storage adapter
+    sudo luarocks install --lua-version=5.1 neo4j || true
 fi
 
 # Fetch Neovim dependency for the plugin
