@@ -5,8 +5,11 @@ local storage = require("learner.storage")
 Tasks.list = {}
 
 ---Setup task module
-function Tasks.setup(config, _)
+function Tasks.setup(config, store)
     Tasks.config = config or {}
+    if store then
+        storage = store
+    end
     Tasks.list = storage.query("tasks") or {}
 end
 

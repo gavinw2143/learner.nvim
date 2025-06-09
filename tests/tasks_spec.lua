@@ -2,14 +2,16 @@ local tasks = require('learner.tasks')
 local storage = require('learner.storage')
 
 local function stub_storage()
-  local s = { data = { tasks = {} } }
-  function s.query(_, key)
-    return s.data[key]
-  end
-  function s.execute(_, key, value)
-    s.data[key] = value
-  end
-  return s
+  local data = { tasks = {} }
+  return {
+    data = data,
+    query = function(key)
+      return data[key]
+    end,
+    execute = function(key, value)
+      data[key] = value
+    end,
+  }
 end
 
 describe('Task persistence', function()
