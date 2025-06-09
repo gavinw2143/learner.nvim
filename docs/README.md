@@ -192,3 +192,94 @@ I could probably just rename this plugin to langu.nvim or something like that; t
     * Given everything stated above, give me some suggestions on what you think would work best for extensibility and workflow integration
 
 Keep asking questions! I want this to be very robust and managable; if you have concerns be sure to express them.
+
+> Langu
+Here are some thoughts on making **learner.nvim / langu.nvim** as extensible and seamlessly integrated into your workflow as possible—plus a few more questions to nail down the details:
+
+---
+
+## Suggestions for Extensibility & Workflow Integration
+
+### 1. Modular Architecture
+
+* **Core “Graph Engine”**
+
+  * Encapsulate all Neo4j interactions behind a Lua module with a simple query-builder API (e.g. `graph:create_topic(…)`, `graph:update_edge(…)`).
+  * Allow swapping Neo4j for a flat-file adapter by conforming to the same interface.
+* **FSRS & Prioritization Layer**
+
+  * Isolate FSRS-specific code in its own module so that additional algorithms (e.g. Leitner, custom heuristics) can be dropped in by implementing a single function signature (`score(topic)`).
+* **LLM Integration Layer**
+
+  * Wrap all calls to OpenRouter behind a `langu.llm.request(prompt_type, context_segments, opts)` API—so you can swap providers or add caching/retries without touching your UI code.
+* **UI Layer**
+
+  * Define a minimal set of “events” (e.g. `on_topic_selected`, `on_review_complete`, `on_query_submitted`) that UI components can subscribe to.
+  * Ship a default Telescope picker + floating-window dashboard, but allow third-party plugins to register their own UIs by listening for those events.
+
+### 2. Configuration & Secrets
+
+* Store credentials (Neo4j URI, OpenRouter API key) in a single `langu.setup({ … })` call, loading defaults from environment or a `.env` file under `stdpath("config")`.
+* Offer an override hook—so users can plug in [vim-secret](https://github.com/kdheepak/vim-secret) or similar if they want encrypted storage later.
+
+### 3. Data Versioning
+
+* Treat your Git-style tree as a pluggable backend:
+
+  * Default: log CRUD actions to a JSON “action log,” then expose a `:LanguUndo` / `:LanguRedo` that replays or rolls back the log.
+  * Advanced: integrate with `git` under the hood—automatically commit snapshot files as topics evolve.
+
+### 4. Containerized Development with Dagger.io
+
+* Provide a `:LanguDevStart` command that spins up a Dagger container with Neo4j preconfigured, then points your plugin at that instance.
+* Let power-users pass in a `docker-compose.yml` or Dagger script to customize the environment.
+
+### 5. Conversationbase & Chain-of-Focus
+
+* Store each LLM query + response as a node (or property) in the graph, tagged with timestamp and topic affinities.
+* Maintain a “focus pointer” that updates on each edit or query—expose it via a Telescope picker so you can jump back to any point in your study timeline.
+
+### 6. Integration Points
+
+* **Notes Import**: Write a small adapter to scrape Markdown/Org headings (e.g. `## Monad` → `Topic: Monad`) so you can bootstrap your graph from existing notes.
+* **Neorg / Orgmode**: Offer a Pandoc-style exporter that syncs Org headings → graph, letting you maintain your master outline in Org while tracking metadata in Neo4j.
+* **Telescope**:
+
+  * `:Telescope langu topics`
+  * `:Telescope langu tasks`
+  * `:Telescope langu focus_history`
+
+---
+
+## Follow-Up Questions
+
+1. **Depth-of-Knowledge & FSRS**
+
+   * How granular do you want your “previous stored responses” to be? Whole conversation chunks, single-sentence answers, or something in between?
+   * Would you like to capture your self-assessed difficulty rating each time you review a topic, or infer it purely from response latency/length?
+
+2. **Chain-of-Focus Management**
+
+   * Should the focus pointer auto-advance after each LLM interaction, or only when you explicitly mark a topic/task as “complete”?
+   * How do you want to visualize “focus drift” over time? A simple timestamped log, or an embeddable chart in Neovim?
+
+3. **Dagger.io Workflow**
+
+   * Do you envision the plugin orchestrating Dagger entirely under the hood, or would you prefer a “run these commands in a shell” approach with documented recipes?
+
+4. **Notes & Third-Party Imports**
+
+   * Do you already have notes in a single directory that we can target for Markdown/Org importing?
+   * If you later use other tools (e.g. Anki, Obsidian), would you want two-way sync, or is one-way ingestion enough?
+
+5. **LLM Prompt Customization**
+
+   * Would you like a UI for editing the system-prompt template, or should that live purely in your `langu.setup{…}` config?
+   * For multi-segment prompts (analogies, summaries), how many segments should be the default batch size before you get prompted to refine it?
+
+---
+
+Let me know which of these suggestions resonate most, and feel free to expand or tweak—then we can dive deeper into the parts you’d like to prototype first!
+
+> Gavin
+
