@@ -291,3 +291,27 @@ initialization the plugin connects to the storage backend specified under the
 with tasks and the spaced repetition scheduler so topics and tasks persist
 across sessions.
 
+## Events
+
+The plugin ships with a lightweight dispatcher in `learner.events`. Modules and
+external plugins can subscribe to events and react to core actions.
+
+Two common events are:
+
+- `topic_reviewed` – fired after a topic has been reviewed.
+- `llm_response` – emitted when a response from the configured LLM is received.
+
+To register a handler use `events.subscribe`:
+
+```lua
+local events = require("learner.events")
+
+events.subscribe("topic_reviewed", function(info)
+  print("topic " .. info.id .. " reviewed")
+end)
+```
+
+Handlers are invoked in the order they were registered whenever
+`events.emit()` is called. This allows third‑party extensions to hook into the
+plugin without modifying its core modules.
+

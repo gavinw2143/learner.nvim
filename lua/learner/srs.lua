@@ -1,5 +1,6 @@
 local SRS = {}
 local storage
+local events = require("learner.events")
 
 -- Table storing topic state indexed by id
 SRS.topics = {}
@@ -15,6 +16,11 @@ function SRS.setup(config, store)
     if storage then
         SRS.topics = storage.query("topics") or {}
     end
+    events.subscribe("topic_reviewed", function(info)
+        if type(info) == "table" and info.id then
+            SRS.record_review(info.id, info.quality or 5)
+        end
+    end)
 end
 
 local function save()
