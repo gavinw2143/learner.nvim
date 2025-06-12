@@ -17,7 +17,13 @@ end
 ---@param task table expects `desc` and optional `goal_id`
 ---@return number id of the inserted task
 function Tasks.add(task)
-    local id = #Tasks.list + 1
+    local max_id = 0
+    for _, t in ipairs(Tasks.list) do
+      if t.id and t.id > max_id then
+        max_id = t.id
+      end
+    end
+    local id = max_id + 1
     task.id = id
     task.done = false
     table.insert(Tasks.list, task)

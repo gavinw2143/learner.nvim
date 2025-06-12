@@ -166,7 +166,7 @@ function UI.register_commands()
             vim.notify("Task id required", vim.log.levels.ERROR)
             return
         end
-        local desc = table.concat(vim.list_slice(opts.fargs, 2), " ")
+        local desc = table.concat(opts.fargs, " ", 2)
         if desc == "" then
             vim.notify("New description required", vim.log.levels.ERROR)
             return

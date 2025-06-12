@@ -1,10 +1,25 @@
-> Gavin
-Hey ho
+1. Request to learn an item
+- While highlighting text in visual mode, `<leader>gi` should trigger three buffers to pop up:
+    - The left 50% of a rectangular space containing the buffers holds the conversation buffer. The right 50% is split at the center, where the bottom buffer is space for multi-line input, and the top buffer contains the previously highlighted 'context' (read-only) text
+- "Learn" mode will actively record a detailed representation of your knowledge observed through your responses
+- In a "Learn" query, a primary concept is derived from the user input. If a primary concept to learn is not inferred, provide a response that will help the user clarify a concept to learn.
+- Using this primary concept, we then derive adjacent concepts that either
+    1. Encapsulate or describe the primary concept, with varying degree of certainty (in most contexts, T or F)
+    2. Serve as a direct component in the description of a concept
+    3. Closely resemble the concept in its components and adjacent concepts 
+- To determine concepts that fit these criteria, -[:DESCRIBES {certainty: float [0-1]}]->
+- Certainty is similar interpretation amongst highly varied perspectives; as more information is received, these certainty values can shift
+- :Context -> The reflexion aspect: peruse different focus graphs
+- :Concept -> everything below and more: must specify a description graph (equivalent to axioms), optional queries, and component logic (operations, implications, conclusions)
+- :Action -> an observed change in state associated with a concept
+- :Event -> offers temporal/locational description of an action paired with an actor concept, i.e. can "instantiate" the action. :Event:Implication are events assumed through a combination of a) inference and b) the presence of other events that co-occur regularly
+- :Modifier -> every quality has a quantitative implication: some combination of attributes (typically other modifiers) with perceived presence [0,1] for each, direction of change [-1,1], consistency, and importance of property value
+- :Category -> label, description, and elements
+- :Sequence -> graph the execution order of events, and implications arising from events
 
-I want to track my learning!
-- Through a Neovim plugin: learner.nvim
-- Check out and potentially make use of OpenRouter
+Hopefully every sentence can be converted to graphs--just have to implement and observe inevitable corner cases
 
+For every word in a sentence, I aim to precisely outline the word's purpose, the words it relates to, and the implications that subsequently arise in the context of the sentence. Then using this information, I want to represent the sentence as queries to a GraphDB using the nodes defined roughly above. Got any advice for making this as streamlined as possible?
 ## learner.nvim
 1. My knowledge should be stored as such:
 - Topics should havep riority based on:

@@ -17,3 +17,7 @@ site/
 
 # Node and other modules
 node_modules/
+
+codex/
+
+reflexion/

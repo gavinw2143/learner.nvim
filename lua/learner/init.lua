@@ -12,6 +12,7 @@ function M.setup(opts)
     -- Establish storage connection early so other modules can persist data
     local storage = require("learner.storage")
     storage.connect(config.get().storage)
+    storage.migrate()
 
     -- Initialize submodules with their respective configs
     require("learner.srs").setup(config.get().srs, storage)
