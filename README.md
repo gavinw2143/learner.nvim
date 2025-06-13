@@ -39,9 +39,6 @@ require('learner').setup({
     user = nil,               -- neo4j user
     pass = nil,               -- neo4j password
   },
-  srs = {
-    base_interval = 1,        -- days between first reviews
-  },
   llm = {
     api_url = 'https://openrouter.ai/api/v1/chat/completions',
     model   = 'gpt-3.5-turbo',
@@ -55,6 +52,7 @@ require('learner').setup({
 ## Usage
 
 - `:LearnerReview` lists all topics that are due and lets you record a review.
+- `<leader>a` in visual mode: start an interactive query with the selected text as context.
 - `:LearnerSuggest [prompt]` sends `prompt` to the configured LLM (defaults to *"Give me a learning suggestion"*).
 
 ## Commands

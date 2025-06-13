@@ -15,7 +15,6 @@ function M.setup(opts)
     storage.migrate()
 
     -- Initialize submodules with their respective configs
-    require("learner.srs").setup(config.get().srs, storage)
     require("learner.llm").setup(config.get().llm)
     require("learner.tasks").setup(config.get().tasks, storage)
     require("learner.ui").setup(config.get().ui)
